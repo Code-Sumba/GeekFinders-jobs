@@ -211,7 +211,8 @@ async function fetchSmartRecruiters(): Promise<RawJob[]> {
       const { data: have } = await db.from("jobs").select("source_id").eq("source", "smartrecruiters").in("source_id", list.map((p) => p.id).slice(0, 1000));
       const known = new Set((have ?? []).map((r) => r.source_id));
       const todo = list
-        .filter((p) => !known.has(p.id) && (p.experienceLevel?.id ?? "not_applicable") in LEVEL_ORDER)
+        // Check the title before paying for the detail call; rejected jobs are never saved, so they'd look "new" every run
+        .filter((p) => !known.has(p.id) && (p.experienceLevel?.id ?? "not_applicable") in LEVEL_ORDER && worthKeeping({ title: p.name, description: "" }))
         .sort((a, b) => LEVEL_ORDER[a.experienceLevel?.id ?? "not_applicable"] - LEVEL_ORDER[b.experienceLevel?.id ?? "not_applicable"])
         .slice(0, cap);
       for (const p of todo) {
