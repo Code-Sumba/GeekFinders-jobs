@@ -1,0 +1,63 @@
+name: Scheduled pipelines
+
+on:
+  schedule:
+    # Private repo: free plan has 2,000 Actions minutes a month, so the schedule is trimmed to fit (~1,500 min).
+    # Times are UTC; IST = UTC + 5:30.
+    - cron: "30 0 * * *"      # 06:00 IST — fetch, dedupe, enrich, match (before the 7:30 alerts)
+    - cron: "0 0-17 * * *"    # hourly 05:30–22:30 IST — alerts for users whose alert time is now (alert hours are 5–22)
+    - cron: "15 3,13 * * *"   # 08:45 and 18:45 IST — news → drafts for review
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "ingest | notify | news"
+        required: true
+        default: ingest
+
+concurrency:
+  group: pipeline-${{ github.event.schedule || inputs.task }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: web
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
+      RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+      ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+      ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      UNSUBSCRIBE_SECRET: ${{ secrets.UNSUBSCRIBE_SECRET }}   # must match the website, or email unsubscribe links fail
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Pick task
+        id: task
+        run: |
+          case "${{ github.event.schedule }}" in
+            "30 0 * * *")    echo "t=ingest" >> "$GITHUB_OUTPUT" ;;
+            "0 0-17 * * *")  echo "t=notify" >> "$GITHUB_OUTPUT" ;;
+            "15 3,13 * * *") echo "t=news"   >> "$GITHUB_OUTPUT" ;;
+            *)              echo "t=${{ inputs.task }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+      - name: Run
+        run: |
+          if [ "${{ steps.task.outputs.t }}" = "news" ]; then npx tsx scripts/news.ts
+          else npx tsx scripts/cron.ts "${{ steps.task.outputs.t }}"; fi

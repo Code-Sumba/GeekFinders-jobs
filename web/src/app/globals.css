@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+/* GeeksFinder design tokens — DESIGN.md §4. Components use only these. */
+@theme {
+  --color-*: initial;
+  --color-paper: #ffffff;
+  --color-paper-2: #f5f7fa;
+  --color-line: #e3e7ed;
+  --color-ink: #14213d;
+  --color-ink-2: #4a5568;
+  --color-ink-3: #7a8494;
+  --color-action: #2457d6;
+  --color-action-dark: #1a44ae;
+  --color-highlight: #ffe45c;
+  --color-success: #16794c;
+  --color-warning: #b45309;
+  --color-danger: #c0362c;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+
+  --text-display: 2.375rem;
+  --text-display--line-height: 2.625rem;
+  --text-display--letter-spacing: -0.02em;
+  --text-display-lg: 3.5rem;
+  --text-display-lg--line-height: 3.75rem;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-h1: 1.875rem;
+  --text-h1--line-height: 2.25rem;
+  --text-h1-lg: 2.5rem;
+  --text-h1-lg--line-height: 2.875rem;
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.875rem;
+  --text-h2-lg: 1.75rem;
+  --text-h2-lg--line-height: 2.125rem;
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.75rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.625rem;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.25rem;
+  --text-resume: 0.875rem;
+  --text-resume--line-height: 1.375rem;
+  --text-article: 1.1875rem;
+  --text-article--line-height: 2rem;
+  --text-tiny: 0.75rem;
+  --text-tiny--line-height: 1rem;
+
+  --radius-chip: 4px;
+  --radius-control: 10px;
+  --radius-panel: 16px;
+
+  --shadow-*: initial;
+  --shadow-float: 0 1px 2px rgba(20, 33, 61, 0.06), 0 8px 24px rgba(20, 33, 61, 0.08);
+
+  --ease-quick: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --container-content: 1200px;
+  --container-reading: 680px;
+}
+
+:root {
+  --dur-instant: 100ms;
+  --dur-quick: 180ms;
+  --dur-standard: 280ms;
+  --dur-emphasis: 450ms;
+}
+
+html { color-scheme: light; }
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Highlighter mark: hand-drawn feel via a slightly skewed pseudo-element */
+.hl {
+  position: relative;
+  z-index: 0;
+  padding: 0 2px;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+.hl::before {
+  content: "";
+  position: absolute;
+  inset: 0.08em -1px 0.02em;
+  z-index: -1;
+  background: var(--color-highlight);
+  border-radius: var(--radius-chip);
+  transform: skew(-1deg) rotate(-0.4deg);
+}
+
+/* Highlight that settles from yellow to paper (tailored resume lines) */
+@keyframes settle {
+  from { background-color: var(--color-highlight); }
+  to { background-color: transparent; }
+}
+.settle { animation: settle 1200ms var(--ease-quick) 400ms both; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.shake { animation: shake 240ms ease-out 1; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 120ms !important;
+  }
+}
+
+@utility input {
+  @apply h-11 w-full rounded-control border border-line bg-paper-2 px-3 text-body text-ink outline-none transition-colors duration-[180ms] placeholder:text-ink-3 focus:border-action focus:bg-paper aria-invalid:border-danger;
+}
+@utility label {
+  @apply mb-1.5 block text-small font-medium text-ink;
+}
+@utility panel {
+  @apply rounded-panel border border-line bg-paper;
+}
+@utility section-pad {
+  @apply py-16 md:py-24;
+}
+@utility wrap {
+  @apply mx-auto w-full max-w-content px-4 md:px-6;
+}
+
+/* Long-form article body (blog): Source Serif 4 19/32, headings in Schibsted Grotesk */
+.article { font-family: var(--font-serif); font-size: var(--text-article); line-height: var(--text-article--line-height); color: var(--color-ink); }
+.article > * + * { margin-top: 1.25em; }
+.article h2 { font-family: var(--font-sans); font-size: var(--text-h2); line-height: var(--text-h2--line-height); font-weight: 600; margin-top: 1.8em; }
+.article h3 { font-family: var(--font-sans); font-size: var(--text-h3); line-height: var(--text-h3--line-height); font-weight: 600; margin-top: 1.5em; }
+.article a { color: var(--color-action); text-decoration: underline; text-underline-offset: 3px; }
+.article ul { list-style: disc; padding-left: 1.25em; }
+.article ol { list-style: decimal; padding-left: 1.25em; }
+.article li + li { margin-top: 0.4em; }
+.article blockquote { border-left: 2px solid var(--color-line); padding-left: 1em; color: var(--color-ink-2); }
+.article table { width: 100%; font-family: var(--font-sans); font-size: var(--text-small); border-collapse: collapse; }
+.article th, .article td { border-bottom: 1px solid var(--color-line); padding: 8px; text-align: left; }
+
+/* Hero sequence (DESIGN.md §5) — CSS only, runs once, rests on the final frame */
+@keyframes sweep { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes rise { from { opacity: 0; transform: translateY(48px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ring-pulse { 0% { box-shadow: 0 0 0 0 rgba(36, 87, 214, 0); } 40% { box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.35); } 100% { box-shadow: 0 0 0 0 rgba(36, 87, 214, 0); } }
+.hero-sweep { position: relative; z-index: 0; white-space: nowrap; padding: 0 2px; }
+.hero-sweep::before {
+  content: ""; position: absolute; inset: 0.08em -1px 0.02em; z-index: -1;
+  background: var(--color-highlight); border-radius: var(--radius-chip); transform: skew(-1deg) rotate(-0.4deg);
+  clip-path: inset(0 100% 0 0);
+  animation: sweep 450ms var(--ease-emphasis) var(--d, 0ms) forwards;
+}
+.hero-rise { opacity: 0; animation: rise 520ms cubic-bezier(0.34, 1.3, 0.5, 1) 2600ms forwards; }
+.hero-pulse { animation: ring-pulse 600ms ease-out 3400ms 1; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-sweep::before { clip-path: none; animation: none; }
+  .hero-rise { opacity: 1; animation: none; }
+  .hero-pulse { animation: none; }
+}

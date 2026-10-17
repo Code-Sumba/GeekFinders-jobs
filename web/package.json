@@ -1,0 +1,51 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "cron:ingest": "tsx --env-file=.env.local scripts/cron.ts ingest",
+    "cron:notify": "tsx --env-file=.env.local scripts/cron.ts notify",
+    "telegram:webhook": "node --env-file=.env.local -e \"const u=(process.env.NEXT_PUBLIC_APP_URL||'').replace(/\\/+$/,'');fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/setWebhook?url=${u}/api/telegram/webhook&secret_token=${process.env.TELEGRAM_WEBHOOK_SECRET}`).then(r=>r.text()).then(console.log)\"",
+    "cron:news": "tsx --env-file=.env.local scripts/news.ts",
+    "test": "vitest run",
+    "telegram:dev": "tsx --env-file=.env.local scripts/telegram-dev.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.134.0",
+    "@react-pdf/renderer": "^4.9.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
+    "@upstash/ratelimit": "^2.2.0",
+    "@upstash/redis": "^1.39.0",
+    "diff": "^9.0.0",
+    "lucide-react": "^1.57.0",
+    "marked": "^18.1.1",
+    "motion": "^14.2.0",
+    "next": "15.5.27",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "sanitize-html": "^2.18.1",
+    "server-only": "^0.0.1",
+    "unpdf": "^1.8.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/diff": "^7.0.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.2",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.27",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^4.1.11"
+  }
+}
