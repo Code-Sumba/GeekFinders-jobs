@@ -281,8 +281,13 @@ async function ingest() {
     data?.forEach((r) => existing.add(r.hash));
   }
   const fresh = hashes.filter((h) => !existing.has(h)).map((h) => ({ ...byHash.get(h)!, hash: h, description: byHash.get(h)!.description.slice(0, 12000) }));
-  for (let i = 0; i < fresh.length; i += 100) await db.from("jobs").insert(fresh.slice(i, i + 100));
-  log(`inserted ${fresh.length} new jobs`);
+  let inserted = 0;
+  for (let i = 0; i < fresh.length; i += 100) {
+    const { error } = await db.from("jobs").insert(fresh.slice(i, i + 100));
+    if (error) log("insert failed", error.message);
+    else inserted += Math.min(100, fresh.length - i);
+  }
+  log(`inserted ${inserted} of ${fresh.length} new jobs`);
 
   await enrich();
   await match();
